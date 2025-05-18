@@ -4,6 +4,7 @@ def paginate_users(page_size, offset):
     Returns a list of user IDs starting from offset, up to page_size items.
     """
     # Example data source: 100 users with IDs 1 to 100
+    # SELECT * FROM user_data LIMIT page_size OFFSET offset
     users = list(range(1, 101))
     return users[offset:offset + page_size]
 
