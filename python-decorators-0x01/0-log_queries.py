@@ -1,5 +1,6 @@
 import sqlite3
 import functools
+from datetime import datetime
 
 def log_queries(func):
     """
@@ -25,10 +26,13 @@ def log_queries(func):
                     query = arg
                     break
         
+        # Add timestamp to the log
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
         if query:
-            print(f"Executing query: {query}")
+            print(f"[{timestamp}] Executing query: {query}")
         else:
-            print("Executing a query (could not determine the query string)")
+            print(f"[{timestamp}] Executing a query (could not determine the query string)")
             
         return func(*args, **kwargs)
     
