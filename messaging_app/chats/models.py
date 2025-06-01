@@ -7,6 +7,8 @@ import uuid
 class User(AbstractUser):
     """
     Extended User model with additional fields for messaging functionality.
+    Inherits all fields from AbstractUser including: username, first_name, last_name, 
+    email, password, is_staff, is_active, date_joined, etc.
     """
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
@@ -15,6 +17,10 @@ class User(AbstractUser):
     is_online = models.BooleanField(default=False)
     last_seen = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+      # Note: password field is inherited from AbstractUser
+    # password = models.CharField(max_length=128)  # Inherited from AbstractUser
+    # Other inherited fields: username, first_name, last_name, email, is_staff, 
+    # is_active, is_superuser, last_login, date_joined, groups, user_permissions
     
     # Override username to make email the primary identifier
     USERNAME_FIELD = 'email'
