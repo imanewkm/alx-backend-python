@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, Count
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Conversation, Message
 from .serializers import (
@@ -28,6 +29,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
     for conversation-specific operations.
     """
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['participants']
     
     def get_queryset(self):
         """Return conversations where the user is a participant"""
@@ -70,7 +73,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
             ConversationSerializer(conversation).data,
             status=status.HTTP_201_CREATED
         )
-      def get_existing_conversation(self, participant_ids):
+    
+    def get_existing_conversation(self, participant_ids):
         """Check if a conversation already exists with the same participants"""
         conversations = Conversation.objects.annotate(
             participant_count=Count('participants')
@@ -176,6 +180,8 @@ class MessageViewSet(viewsets.ModelViewSet):
     """
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['conversation', 'sender']
     
     def get_queryset(self):
         """Return messages from conversations where user is a participant"""
