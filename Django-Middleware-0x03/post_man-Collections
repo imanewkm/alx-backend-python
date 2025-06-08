@@ -1,0 +1,5 @@
+http://localhost:8000/api/token/
+
+http://localhost:8000/api/v1/chats/conversations/
+
+http://localhost:8000/api/v1/chats/messages/
