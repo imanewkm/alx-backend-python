@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Deleted Successfully</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .success-icon {
+            font-size: 4em;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+        .success-title {
+            color: #28a745;
+            font-size: 2em;
+            font-weight: bold;
+            margin: 0 0 20px 0;
+        }
+        .success-message {
+            color: #495057;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .deletion-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .deletion-info h3 {
+            color: #0c5460;
+            margin-top: 0;
+        }
+        .info-item {
+            margin: 10px 0;
+            color: #495057;
+        }
+        .final-note {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+            color: #495057;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">✅</div>
+        <h1 class="success-title">Account Deleted Successfully</h1>
+        
+        <div class="success-message">
+            <p>Your account has been permanently deleted from our messaging system.</p>
+            <p>All your data, including messages, notifications, and conversation history, has been completely removed.</p>
+        </div>
+
+        <div class="deletion-info">
+            <h3>📋 Deletion Summary</h3>
+            <div class="info-item">
+                <strong>Account:</strong> {{ user_email }}
+            </div>
+            <div class="info-item">
+                <strong>User ID:</strong> {{ deletion_info.user_id }}
+            </div>
+            <div class="info-item">
+                <strong>Deleted At:</strong> {{ deletion_info.deletion_timestamp|slice:":19" }}
+            </div>
+            <div class="info-item">
+                <strong>Status:</strong> <span style="color: #28a745;">✅ Complete</span>
+            </div>
+        </div>
+
+        <div class="final-note">
+            <p><strong>What happened:</strong></p>
+            <ul>
+                <li>🗑️ Your user account has been permanently deleted</li>
+                <li>📧 All messages you sent and received have been removed</li>
+                <li>🔔 All your notifications have been deleted</li>
+                <li>📚 Your message edit history has been cleared</li>
+                <li>💬 You've been removed from all conversations</li>
+                <li>🧹 Our system automatically cleaned up all related data</li>
+            </ul>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <p style="color: #6c757d; font-style: italic;">
+                Thank you for using our messaging system. 
+                If you need to create a new account in the future, you can register with a new email address.
+            </p>
+            
+            <a href="/" class="btn">
+                🏠 Return to Home Page
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Auto-redirect after 30 seconds (optional)
+        setTimeout(function() {
+            if (confirm('Would you like to be redirected to the home page?')) {
+                window.location.href = '/';
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

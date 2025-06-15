@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Account - Confirmation Required</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .warning-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .warning-icon {
+            font-size: 4em;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+        .warning-title {
+            color: #dc3545;
+            font-size: 2em;
+            font-weight: bold;
+            margin: 0;
+        }
+        .warning-subtitle {
+            color: #6c757d;
+            margin: 10px 0 0 0;
+        }
+        .user-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        .deletion-summary {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .deletion-summary h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .data-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+        .data-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #dc3545;
+        }
+        .data-label {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .consequences {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .consequences h3 {
+            color: #721c24;
+            margin-top: 0;
+        }
+        .consequences ul {
+            color: #721c24;
+            margin: 10px 0;
+        }
+        .consequences li {
+            margin: 8px 0;
+        }
+        .form-section {
+            background: #e9ecef;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+        .confirmation-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ced4da;
+            border-radius: 8px;
+            font-size: 1em;
+            margin: 10px 0;
+        }
+        .confirmation-input:focus {
+            border-color: #dc3545;
+            outline: none;
+            box-shadow: 0 0 5px rgba(220, 53, 69, 0.3);
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+            color: white;
+            text-decoration: none;
+        }
+        .btn-export {
+            background: #007bff;
+            color: white;
+            margin-bottom: 20px;
+        }
+        .btn-export:hover {
+            background: #0056b3;
+            color: white;
+            text-decoration: none;
+        }
+        .recent-activity {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .recent-activity h3 {
+            color: #0c5460;
+            margin-top: 0;
+        }
+        .activity-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            border-left: 3px solid #17a2b8;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #f5c6cb;
+        }
+        .instructions {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="warning-header">
+            <div class="warning-icon">⚠️</div>
+            <h1 class="warning-title">Delete Account</h1>
+            <p class="warning-subtitle">This action cannot be undone</p>
+        </div>
+
+        <!-- Display any error messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="error-message">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- User Information -->
+        <div class="user-info">
+            <h3>📋 Account Information</h3>
+            <p><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Username:</strong> {{ user.username }}</p>
+            <p><strong>User ID:</strong> {{ user.user_id }}</p>
+        </div>
+
+        <!-- Data Export Option -->
+        <div style="text-align: center; margin: 20px 0;">
+            <a href="{% url 'messaging:export_user_data' %}" class="btn btn-export">
+                📥 Export My Data Before Deletion
+            </a>
+            <p style="color: #6c757d; font-size: 0.9em;">
+                Download a complete backup of all your messages, conversations, and data
+            </p>
+        </div>
+
+        <!-- Deletion Summary -->
+        <div class="deletion-summary">
+            <h3>📊 Data That Will Be Deleted</h3>
+            <div class="data-grid">
+                <div class="data-item">
+                    <div class="data-number">{{ deletion_summary.sent_messages_count }}</div>
+                    <div class="data-label">Messages Sent</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-number">{{ deletion_summary.received_messages_count }}</div>
+                    <div class="data-label">Messages Received</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-number">{{ deletion_summary.conversations_count }}</div>
+                    <div class="data-label">Conversations</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-number">{{ deletion_summary.notifications_count }}</div>
+                    <div class="data-label">Notifications</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-number">{{ deletion_summary.edit_history_count }}</div>
+                    <div class="data-label">Edit Histories</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-number">{{ deletion_summary.total_data_points }}</div>
+                    <div class="data-label">Total Data Points</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Preview -->
+        {% if recent_activity.recent_messages %}
+        <div class="recent-activity">
+            <h3>📱 Recent Messages (Last 5)</h3>
+            {% for message in recent_activity.recent_messages %}
+                <div class="activity-item">
+                    <strong>{{ message.timestamp|date:"M d, Y H:i" }}</strong> - 
+                    {{ message.content|truncatechars:60 }}
+                    {% if message.receiver %}
+                        → {{ message.receiver.email }}
+                    {% else %}
+                        (Group Message)
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Consequences Warning -->
+        <div class="consequences">
+            <h3>🚨 What Happens When You Delete Your Account</h3>
+            <ul>
+                <li><strong>All your messages will be permanently deleted</strong> - Both sent and received</li>
+                <li><strong>Your message edit history will be lost</strong> - {{ deletion_summary.edit_history_count }} edit records</li>
+                <li><strong>All notifications will be removed</strong> - {{ deletion_summary.notifications_count }} notifications</li>
+                <li><strong>You'll be removed from {{ deletion_summary.conversations_count }} conversations</strong></li>
+                <li><strong>Other users won't be able to see your messages</strong> in their conversations</li>
+                <li><strong>This action is irreversible</strong> - Your account cannot be recovered</li>
+                <li><strong>You'll be immediately logged out</strong> and cannot log back in</li>
+            </ul>
+        </div>
+
+        <!-- Confirmation Form -->
+        <form method="post" action="{% url 'messaging:delete_user_account' %}">
+            {% csrf_token %}
+            <div class="form-section">
+                <h3>✍️ Confirmation Required</h3>
+                <div class="instructions">
+                    <p><strong>To confirm deletion, please type exactly:</strong></p>
+                    <code style="background: #f8f9fa; padding: 5px 10px; border-radius: 4px;">delete my account</code>
+                </div>
+                
+                <label for="confirmation" style="font-weight: bold; color: #495057;">
+                    Type "delete my account" to confirm:
+                </label>
+                <input 
+                    type="text" 
+                    id="confirmation" 
+                    name="confirmation" 
+                    class="confirmation-input"
+                    placeholder="delete my account"
+                    required
+                    autocomplete="off"
+                >
+                
+                <div class="button-group">
+                    <a href="{% url 'messaging:account_settings' %}" class="btn btn-secondary">
+                        ← Cancel & Go Back
+                    </a>
+                    <button type="submit" class="btn btn-danger" id="deleteButton" disabled>
+                        🗑️ Delete My Account Forever
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Enable/disable delete button based on confirmation text
+        document.getElementById('confirmation').addEventListener('input', function(e) {
+            const deleteButton = document.getElementById('deleteButton');
+            const confirmationText = e.target.value.trim().toLowerCase();
+            const expectedText = 'delete my account';
+            
+            if (confirmationText === expectedText) {
+                deleteButton.disabled = false;
+                deleteButton.style.opacity = '1';
+                e.target.style.borderColor = '#28a745';
+            } else {
+                deleteButton.disabled = true;
+                deleteButton.style.opacity = '0.6';
+                e.target.style.borderColor = '#dc3545';
+            }
+        });
+
+        // Extra confirmation on form submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const confirmation = confirm(
+                'This is your final chance!\n\n' +
+                'Are you absolutely sure you want to delete your account?\n\n' +
+                'This action cannot be undone and all your data will be permanently lost.'
+            );
+            
+            if (!confirmation) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

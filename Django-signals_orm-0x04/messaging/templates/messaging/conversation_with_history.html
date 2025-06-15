@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversation with Edit History</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .conversation-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .conversation-header {
+            background: #007bff;
+            color: white;
+            padding: 20px;
+        }
+        .conversation-header h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        .participants {
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+        .messages-container {
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .message {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            position: relative;
+            max-width: 70%;
+        }
+        .message.sent {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        .message.received {
+            background: #e9ecef;
+            color: #333;
+        }
+        .message-header {
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            opacity: 0.8;
+        }
+        .message-content {
+            line-height: 1.4;
+        }
+        .message-footer {
+            font-size: 0.8em;
+            margin-top: 8px;
+            opacity: 0.7;
+        }
+        .edit-indicator {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ffc107;
+            color: #333;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            title: "This message has been edited";
+        }
+        .edit-indicator:hover {
+            background: #ff8c00;
+            transform: scale(1.1);
+        }
+        .edit-history-link {
+            color: #ffc107;
+            text-decoration: none;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .edit-history-link:hover {
+            text-decoration: underline;
+        }
+        .message.sent .edit-history-link {
+            color: #fff3cd;
+        }
+        .pagination {
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e0e0e0;
+        }
+        .pagination a, .pagination span {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 0 4px;
+            text-decoration: none;
+            border: 1px solid #007bff;
+            border-radius: 4px;
+        }
+        .pagination a {
+            color: #007bff;
+        }
+        .pagination a:hover {
+            background: #007bff;
+            color: white;
+        }
+        .pagination .current {
+            background: #007bff;
+            color: white;
+        }
+        .edit-preview {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            max-width: 300px;
+            display: none;
+        }
+        .edit-preview h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .edit-preview p {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+        .edit-preview .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="conversation-container">
+        <div class="conversation-header">
+            <h1>💬 {{ conversation }}</h1>
+            <div class="participants">
+                👥 Participants: 
+                {% for participant in participants %}
+                    {{ participant.first_name }} {{ participant.last_name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="messages-container">
+            {% for message in messages %}
+                <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}" 
+                     data-message-id="{{ message.message_id }}">
+                    
+                    {% if message.edited %}
+                        <div class="edit-indicator" onclick="showEditPreview('{{ message.message_id }}', this)">
+                            ✏️
+                        </div>
+                    {% endif %}
+
+                    <div class="message-header">
+                        <strong>{{ message.sender.first_name }} {{ message.sender.last_name }}</strong>
+                        {% if message.receiver %}
+                            → {{ message.receiver.first_name }} {{ message.receiver.last_name }}
+                        {% endif %}
+                    </div>
+
+                    <div class="message-content">
+                        {{ message.content }}
+                    </div>
+
+                    <div class="message-footer">
+                        {{ message.timestamp|date:"M d, Y H:i" }}
+                        {% if message.edited %}
+                            <span style="color: #ffc107;">✏️ Edited ({{ message.edit_count }} times)</span>
+                            <a href="{% url 'message_edit_history' message.message_id %}" 
+                               class="edit-history-link" target="_blank">
+                                View History
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <div style="text-align: center; color: #6c757d; padding: 40px;">
+                    <p>No messages in this conversation yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if messages.has_other_pages %}
+        <div class="pagination">
+            {% if messages.has_previous %}
+                <a href="?page=1">&laquo; First</a>
+                <a href="?page={{ messages.previous_page_number }}">Previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ messages.number }} of {{ messages.paginator.num_pages }}
+            </span>
+
+            {% if messages.has_next %}
+                <a href="?page={{ messages.next_page_number }}">Next</a>
+                <a href="?page={{ messages.paginator.num_pages }}">Last &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Edit Preview Popup -->
+    <div id="editPreview" class="edit-preview">
+        <span class="close-btn" onclick="hideEditPreview()">&times;</span>
+        <h4>📝 Edit History Preview</h4>
+        <div id="editPreviewContent">
+            Loading...
+        </div>
+    </div>
+
+    <script>
+        function showEditPreview(messageId, element) {
+            const preview = document.getElementById('editPreview');
+            const content = document.getElementById('editPreviewContent');
+            
+            // Position the preview near the clicked element
+            const rect = element.getBoundingClientRect();
+            preview.style.position = 'fixed';
+            preview.style.top = (rect.bottom + 10) + 'px';
+            preview.style.left = Math.max(10, rect.left - 150) + 'px';
+            preview.style.display = 'block';
+            
+            // Fetch edit preview data
+            fetch(`/messaging/message/${messageId}/edit-preview/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.is_edited) {
+                        content.innerHTML = `
+                            <p><strong>Edit Count:</strong> ${data.edit_count}</p>
+                            <p><strong>Last Edited:</strong> ${new Date(data.last_edited).toLocaleString()}</p>
+                            <p><strong>Latest Change:</strong></p>
+                            <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; font-size: 0.8em;">
+                                ${data.latest_old_content}
+                            </div>
+                            <p style="text-align: center; margin-top: 10px;">
+                                <a href="/messaging/message/${messageId}/history/" target="_blank" 
+                                   style="color: #007bff;">View Full History</a>
+                            </p>
+                        `;
+                    } else {
+                        content.innerHTML = '<p>This message has not been edited.</p>';
+                    }
+                })
+                .catch(error => {
+                    content.innerHTML = '<p>Error loading edit history.</p>';
+                });
+        }
+
+        function hideEditPreview() {
+            document.getElementById('editPreview').style.display = 'none';
+        }
+
+        // Hide preview when clicking outside
+        document.addEventListener('click', function(event) {
+            const preview = document.getElementById('editPreview');
+            const target = event.target;
+            
+            if (!preview.contains(target) && !target.classList.contains('edit-indicator')) {
+                hideEditPreview();
+            }
+        });
+
+        // Auto-scroll to bottom for new conversations
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.messages-container');
+            container.scrollTop = container.scrollHeight;
+        });
+    </script>
+</body>
+</html>
