@@ -1,143 +1,89 @@
-import logging
-from datetime import datetime
-
-from rest_framework import status
+from datetime import datetime, time
+import os
 from rest_framework.response import Response
-from collections import defaultdict, deque
+from rest_framework import status
+from django.utils import timezone
+from time import sleep
+import asyncio
 
-class RequestLoggingMiddleware:
-    """
-    Middleware to log user requests including timestamp, user, and request path.
-    """
+
+class RequestLoggingMiddleware():
     def __init__(self, get_response):
         self.get_response = get_response
-        self.logger = logging.getLogger('request_logger')
-        self.logger.setLevel(logging.INFO)
-        
-        if not self.logger.handlers:
-            file_handler = logging.FileHandler('requests.log')
-            formatter = logging.Formatter('%(message)s')
-            file_handler.setFormatter(formatter)
-            self.logger.addHandler(file_handler)
 
     def __call__(self, request):
-        if hasattr(request, 'user') and request.user.is_authenticated:
-            user = request.user.email if hasattr(request.user, 'email') else str(request.user)
-        else:
-            user = "Anonymous"
-        
-        self.logger.info(
-            f"{datetime.now()} - User: {user} - Path: {request.path}"
-        )
-        
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(current_dir)
+
+        log_file_path = os.path.join(parent_dir, 'requests.log')
+
+        with open(log_file_path, 'a') as log_file:
+            log = f"\n{datetime.now()} - User: {request.user} - Path: {request.path}"
+            log_file.write(log)
         response = self.get_response(request)
-        
         return response
+    
 
-class RestrictAccessByTimeMiddleware:
-    """
-    Custom middleware to restrict access to the application based on time.
-    Access is allowed only between 9 PM (21:00) and 6 AM (06:00).
-    """
+class RestrictAccessByTimeMiddleware():
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        current_hour = datetime.now().hour
-        
-        if current_hour >= 21 or current_hour < 6:
-            return self.get_response(request)
-        else:
-            return self._deny_access()
+        current_time = datetime.now().time()
+        to_time = time(21, 0, 0)
+        from_time = time(18, 0, 0)
 
-    def _deny_access(self):
-        """
-        Return a 403 Forbidden response when access is denied.
-        """
-        return Response(
-            "Access is restricted to (9 PM - 6 AM).",
-            status=status.HTTP_403_FORBIDDEN
-        )
-
-class OffensiveLanguageMiddleware:
-    """
-    Middleware to limit POST requests (messages) per IP address.
-    Allows maximum 5 messages per minute per IP address.
-    """
-    def __init__(self, get_response):
-        self.get_response = get_response
-        self.ip_message_tracker = defaultdict(deque)
-        self.message_limit = 5 
-        self.time_window = datetime.timedelta(minutes=1) 
-
-    def __call__(self, request):
-        if request.method == 'POST':
-            client_ip = self._get_client_ip(request)
-            
-            if self._is_rate_limited(client_ip):
-                return self._deny_access()
+        if from_time <= current_time <= to_time:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         
         response = self.get_response(request)
         return response
+    
 
-    def _get_client_ip(self, request):
-        """
-        Get the client's IP address from the request.
-        """
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0]
-        else:
-            ip = request.META.get('REMOTE_ADDR')
-        return ip
-
-    def _is_rate_limited(self, ip_address):
-        """
-        Check if the IP address has exceeded the rate limit.
-        Returns True if rate limited, False otherwise.
-        """
-        current_time = datetime.now()
-        ip_timestamps = self.ip_message_tracker[ip_address]
-        
-        while ip_timestamps and current_time - ip_timestamps[0] > self.time_window:
-            ip_timestamps.popleft()
-        
-        if len(ip_timestamps) >= self.message_limit:
-            return True
-        
-        ip_timestamps.append(current_time)
-        return False
-
-    def _deny_access(self):
-        """
-        Return a 429 Too Many Requests response when rate limited.
-        """
-        return Response(
-            {
-                "error": "Rate limit exceeded",
-                "message": f"Maximum {self.message_limit} messages per minute allowed",
-                "retry_after": "60 seconds"
-            },
-            status=status.HTTP_429_TOO_MANY_REQUESTS
-        )
-
-class RolepermissionMiddleware:
-    """
-    Middleware to check if the user has the required role for the request.
-    """
+class OffensiveLanguageMiddleware():
     def __init__(self, get_response):
         self.get_response = get_response
+        self.message_count = {}
 
     def __call__(self, request):
-        if hasattr(request, 'user') and request.user.is_authenticated:
-            user = request.user
-            user_role = getattr(user, 'role', None)  
-            
-            if user_role not in ['admin', 'moderator']:
-                return Response(
-                    {"error": "You do not have permission to perform this action."},
-                    status=status.HTTP_403_FORBIDDEN
+        ip = request.META.get('REMOTE_ADDR')
+
+        if ip not in self.message_count:
+            self.message_count[ip] = 0
+            response = self.get_response(request)
+            return response
+
+        elif self.message_count[ip] == 5:
+            print(
+                f"User: {request.user} with IP: {ip} won't send any new message for 1 minute"
                 )
+            
+            sleep(60)
+
+            del self.message_count[ip]
+
+            response = Response(
+                data='You have been limited due to sending too many messages',
+                status=status.HTTP_429_TOO_MANY_REQUESTS
+                )
+            
+            return response
+        
+        elif request.method == 'POST':
+            self.message_count[ip] += 1
+            print(f"User: {request.user} with IP: {ip} has sent {self.message_count[ip]} messages")
+            
+        response = self.get_response(request)
+        return response
+    
+
+class RolepermissionMiddleware():
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if not request.user.is_staff and not request.user.is_superuser:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         
         response = self.get_response(request)
         return response

@@ -1,18 +1,20 @@
+#!/usr/bin/python3
+seed = __import__('seed')
+
+
 def stream_user_ages():
-    # Example: Simulate streaming ages from a large dataset
-    # Replace this with actual data source in real use
-    ages = [23, 45, 34, 25, 67, 29, 31, 40, 38, 50]
-    for age in ages:
+    connection = seed.connect_to_prodev()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute(f"SELECT age FROM user_data")
+    rows = cursor.fetchall()
+    for age in rows:
         yield age
+    connection.close()
 
-def calculate_average_age():
-    total = 0
+if __name__ == '__main__':
     count = 0
+    total_age = 0
     for age in stream_user_ages():
-        total += age
+        total_age += age['age']
         count += 1
-    average = total / count if count > 0 else 0
-    print(f"Average age of users: {average}")
-
-if __name__ == "__main__":
-    calculate_average_age()
+    print(f"Average age of users: {total_age//count}")

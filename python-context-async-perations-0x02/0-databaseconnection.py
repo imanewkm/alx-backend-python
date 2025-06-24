@@ -1,72 +1,44 @@
-import sqlite3
-from typing import List, Tuple
+import mysql.connector
+import os
 
-#!/usr/bin/env python3
-"""
-Context manager for handling database connections
-"""
-
-
-class DatabaseConnection:
-    """
-    A context manager for database connections
-    """
-
-    def __init__(self, db_name: str = "example.db"):
-        """Initialize with database name"""
+class DatabaseConnection():
+    """handle opening and closing database connections automatically"""
+    def __init__(self, db_host, db_user, db_password, db_name):
+        print("Initializing DatabaseConnection")
+        self.db_host = db_host
+        self.db_user = db_user
+        self.db_password = db_password
         self.db_name = db_name
-        self.connection = None
+        self.conn = None
 
     def __enter__(self):
-        """
-        Open database connection when entering context
-        Returns the connection cursor
-        """
-        self.connection = sqlite3.connect(self.db_name)
-        return self.connection.cursor()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """
-        Close database connection when exiting context
-        """
-        if self.connection:
-            if exc_type is None:
-                # No exception occurred, commit changes
-                self.connection.commit()
-            else:
-                # Exception occurred, rollback changes
-                self.connection.rollback()
-            self.connection.close()
-        # Return False to allow any exceptions to be propagated
-        return False
-
-
-if __name__ == "__main__":
-    # Example usage
-    # First create a table and insert some data for demonstration
-    with DatabaseConnection() as cursor:
-        # Create users table if it doesn't exist
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL
-        )
-        ''')
         
-        # Insert sample data
-        cursor.execute("DELETE FROM users")  # Clear existing data
-        users_data = [
-            (1, "Alice", "alice@example.com"),
-            (2, "Bob", "bob@example.com"),
-            (3, "Charlie", "charlie@example.com")
-        ]
-        cursor.executemany("INSERT INTO users VALUES (?, ?, ?)", users_data)
-    
-    # Now use the context manager to query and print data
-    with DatabaseConnection() as cursor:
-        cursor.execute("SELECT * FROM users")
-        results = cursor.fetchall()
-        print("Query results:")
-        for row in results:
-            print(f"ID: {row[0]}, Name: {row[1]}, Email: {row[2]}")
+        print(f"DEBUG: Connecting with:")
+        print(f"DEBUG: Host: {self.db_host}")
+        print(f"DEBUG: User: {self.db_user}")
+        print(f"DEBUG: Password: {'*' * len(self.db_password) if self.db_password else 'None/Empty'}")
+        print(f"DEBUG: Database: {self.db_name}")
+        print("_" * 20)
+
+        try:
+            self.conn = mysql.connector.connect(
+            host=self.db_host,
+            user=self.db_user,
+            password=self.db_password,
+            database=self.db_name
+            )
+            return self.conn
+        except mysql.connector.Error as err:
+            print(f"Error connecting to MySQL server: {err}")
+            return None
+        
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        if self.conn is not None:
+            self.conn.close()
+
+
+with DatabaseConnection(os.environ.get("MY_DB_HOST"), os.environ.get("MY_DB_USER"), os.environ.get("MY_DB_PASSWORD"), os.environ.get("MY_DB_NAME")) as conn:
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users") 
+    print(cursor.fetchall())
+

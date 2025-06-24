@@ -1,72 +1,58 @@
-import sqlite3
-from typing import List, Tuple, Any
+import mysql.connector
+import os
 
-#!/usr/bin/env python3
-"""
-Module for a context manager that executes a query
-"""
-
-
-class ExecuteQuery:
-    """
-    A context manager for executing SQL queries.
-    """
-
-    def __init__(self, query: str, params=None):
-        """
-        Initialize the ExecuteQuery context manager.
-
-        Args:
-            query: The SQL query to execute
-            params: Parameters to use with the query
-        """
+class ExecuteQuery():
+    """handle opening and closing database connections automatically"""
+    def __init__(self, db_host, db_user, db_password, db_name, query, param=None):
+        print("Initializing ExecuteQuery")
+        self.db_host = db_host
+        self.db_user = db_user
+        self.db_password = db_password
+        self.db_name = db_name
+        self.conn = None
         self.query = query
-        self.params = params if params is not None else []
-        self.connection = None
-        self.cursor = None
-        self.result = None
+        self.param = (param,)
 
     def __enter__(self):
-        """
-        Set up the database connection and execute the query.
-        Returns the query result.
-        """
-        self.connection = sqlite3.connect(":memory:")  # In-memory database for demo
-        self.cursor = self.connection.cursor()
         
-        # For demo purposes, create a users table
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY,
-                name TEXT,
-                age INTEGER
-            )
-        """)
-        
-        # Insert some sample data
-        sample_data = [
-            (1, "Alice", 22),
-            (2, "Bob", 30),
-            (3, "Charlie", 28),
-            (4, "David", 20)
-        ]
-        self.cursor.executemany(
-            "INSERT OR IGNORE INTO users VALUES (?, ?, ?)", 
-            sample_data
-        )
-        
-        # Execute the actual query
-        self.cursor.execute(self.query, self.params)
-        self.result = self.cursor.fetchall()
-        
-        return self.result
+        print(f"DEBUG: Connecting with:")
+        print(f"DEBUG: Host: {self.db_host}")
+        print(f"DEBUG: User: {self.db_user}")
+        print(f"DEBUG: Password: {'*' * len(self.db_password) if self.db_password else 'None/Empty'}")
+        print(f"DEBUG: Database: {self.db_name}")
+        print("_" * 20)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """
-        Clean up resources.
-        """
-        if self.cursor:
-            self.cursor.close()
-        if self.connection:
-            self.connection.close()
-        return False  # Don't suppress exceptions
+        try:
+            self.conn = mysql.connector.connect(
+            host=self.db_host,
+            user=self.db_user,
+            password=self.db_password,
+            database=self.db_name
+            )
+            cursor = self.conn.cursor()
+            if self.param:
+                cursor.execute(self.query, self.param)
+            else:
+                cursor.execute(self.query)
+            result = cursor.fetchall()
+            cursor.close()
+            return result
+                
+        except mysql.connector.Error as err:
+            print(f"Error executing query (\"{self.query}\", {self.param}): {err}")
+            raise(err)
+        
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        if self.conn is not None:
+            self.conn.close()
+
+with ExecuteQuery(
+    os.environ.get("MY_DB_HOST"), 
+    os.environ.get("MY_DB_USER"), 
+    os.environ.get("MY_DB_PASSWORD"), 
+    os.environ.get("MY_DB_NAME"),
+    "SELECT * FROM users WHERE age > ?",
+    25
+    ) as result:
+
+    print(result)

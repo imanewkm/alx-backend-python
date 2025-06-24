@@ -1,70 +1,61 @@
 import uuid
 from django.db import models
-from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
+from django.utils.translation import gettext_lazy as _
 
-class CustomUserManager(BaseUserManager):
-    """Custom user model manager for creating users and superusers."""
-    def create_user(self, email, password=None, **extra_fields):
-        """Create and return a user with an email and password."""
-        if not email:
-            raise ValueError("The Email field must be set")
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, email, password=None, **extra_fields):
-        """Create and return a superuser with an email and password."""
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError("Superuser must have is_staff=True.")
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError("Superuser must have is_superuser=True.")
-
-        return self.create_user(email, password, **extra_fields)
 
 class User(AbstractUser):
-    """Custom user model with email as the unique identifier."""
+    """
+    user model
+    """
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    email = models.EmailField(unique=True)
-    first_name = models.CharField(max_length=30, blank=True)
-    last_name = models.CharField(max_length=30, blank=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
-    is_superuser = models.BooleanField(default=False)
-    last_login = models.DateTimeField(null=True, blank=True)
-    date_joined = models.DateTimeField(auto_now_add=True)
-
-    objects = CustomUserManager()
+    email = models.EmailField(_('email address'), unique=True)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=100)
+    username = models.CharField(max_length=100, unique=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['first_name', 'phone_number', 'username']
 
     def __str__(self):
-        return self.email
+        return f"{self.username}(email: '{self.email}', id: '{self.user_id}')"
     
 
 class Conversation(models.Model):
-    """Model representing a conversation between users."""
+    """
+    Tracks which users are involved in a conversation
+    """
     conversation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     participants = models.ManyToManyField(User, related_name='conversations')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Conversation {self.conversation_id} with {self.participants.count()} participants"
+        participants_emails = ", ".join([p.email for p in self.participants.all()])
+        return f"Conversation {self.conversation_id} with: {participants_emails}"
+    
+    class Meta:
+        verbose_name = _("Conversation")
+        verbose_name_plural = _("Conversations")
+        ordering = ['-created_at']
+
 
 class Message(models.Model):
-    """Model representing a message in a conversation."""
+    """
+    message model
+    """
     message_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    conversation = models.ForeignKey(Conversation, related_name='messages', on_delete=models.CASCADE)
-    sender = models.ForeignKey(User, related_name='sent_messages', on_delete=models.CASCADE)
     message_body = models.TextField()
-    sent_at = models.DateTimeField(auto_now_add=True)
+    edited_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
+
+    class Meta:
+        verbose_name = _("Message")
+        verbose_name_plural = _("Messages")
+        ordering = ['created_at']
 
     def __str__(self):
-        return f"Message {self.message_body[:8]} from {self.sender.email}"
+        return f"Message from {self.sender.email} in {self.conversation.conversation_id} at {self.created_at.strftime('%Y-%m-%d %H:%M')}: {self.message_body[:50]}..."
+    

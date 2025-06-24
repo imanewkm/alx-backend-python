@@ -1,53 +1,41 @@
 import sqlite3 
 import functools
-from typing import Callable, Any
 
-def with_db_connection(func: Callable) -> Callable:
-    """
-    Decorator that provides a database connection to the wrapped function.
-    Automatically opens and closes the connection.
-    """
+def with_db_connection(func):
+    """automatically handles opening and closing database connections""" 
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        # Create connection to database
-        conn = sqlite3.connect('example.db')
-        
+    def wrapper_with_db_connection(*args, **kwargs):
+        conn = sqlite3.connect('users.db')
         try:
-            # Call the original function with connection as first argument
-            return func(conn, *args, **kwargs)
+            kwargs['conn'] = conn
+            return func(*args, **kwargs)
+        except Exception as e:
+            raise(e)
         finally:
-            # Ensure connection is closed regardless of success or failure
-            conn.close()
-    
-    return wrapper
+            conn.close() 
+    return wrapper_with_db_connection
 
-def transactional(func: Callable) -> Callable:
-    """
-    Decorator that wraps a function in a database transaction.
-    Commits if the function completes successfully or rolls back if an exception occurs.
-    """
+def transactional(func):
+    """ensures a function running a database operation is wrapped inside a transaction"""
     @functools.wraps(func)
-    def wrapper(conn, *args, **kwargs):
+    def wrapper_transactional(*args, **kwargs):
+        conn = kwargs['conn']
         try:
-            # Execute the function
-            result = func(conn, *args, **kwargs)
-            
-            # If successful, commit the transaction
+            conn.isolation_level = None
+            result = func(*args, **kwargs)
             conn.commit()
-            
             return result
         except Exception as e:
-            # If an error occurs, roll back the transaction
             conn.rollback()
-            raise e  # Re-raise the exception after rollback
-    
-    return wrapper
+            raise(e)
+
+    return wrapper_transactional
 
 @with_db_connection 
 @transactional 
 def update_user_email(conn, user_id, new_email): 
     cursor = conn.cursor() 
     cursor.execute("UPDATE users SET email = ? WHERE id = ?", (new_email, user_id)) 
-    # Update user's email with automatic transaction handling 
 
+#### Update user's email with automatic transaction handling 
 update_user_email(user_id=1, new_email='Crawford_Cartwright@hotmail.com')

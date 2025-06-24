@@ -1,10 +1,10 @@
 """
-ASGI config for messaging_app project.
+ASGI config for Django-Middleware-0x03 project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
 For more information on this file, see
-https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
+https://docs.djangoproject.com/en/4.2/howto/deployment/asgi/
 """
 
 import os

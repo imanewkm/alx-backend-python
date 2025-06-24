@@ -1,38 +1,35 @@
-from rest_framework import permissions 
-from .models import Conversation, Message
+from rest_framework import permissions
+
+
+class IsSenderOrReadOnly(permissions.BasePermission):
+    """
+    Allow only participants in a conversation to send, 
+    view, update and delete messages
+    Read-only access is allowed for authenticated user.
+    """
+    message = "You do not have permission to perform this action."
+
+    def has_object_permission(self, request, view, obj):
+        # Read permissions are allowed to any request
+        # GET, HEAD, OPTIONS are allowed
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        # Write permissions are only allowd to sender of message.
+        # can perform POST, PUT, PATCH and DELETE
+        # 'obj' is the Message instance and 'obj.sender' is the User instance
+        return obj.sender == request.user
 
 
 class IsParticipantOfConversation(permissions.BasePermission):
     """
-    Custom permission class that enforces conversation-based access control.
-    
-    Ensures that only authenticated users who are participants in a conversation
-    can perform operations on that conversation and its messages.
+    Allow only authenticated users to access the api/view, manage conversation
     """
+
+    def has_object_permission(self, request, view, obj):
+        # 'obj' is the Conversation instance
+        return request.user in obj.participants.all()
     
     def has_permission(self, request, view):
-        """
-        Check if the user has permission to access the view.
-        """
+        # For list view, ensure user is authenticated
         return request.user and request.user.is_authenticated
-    
-    def has_object_permission(self, request, view, obj):
-        """
-        Check if the user has permission to perform the requested action on the object.
-        """
-        user = request.user
-        
-        if isinstance(obj, Conversation):
-            return obj.participants.filter(user_id=user.user_id).exists()
-            
-        elif isinstance(obj, Message):
-            is_participant = obj.conversation.participants.filter(user_id=user.user_id).exists()
-            if not is_participant:
-                return False
-
-            if request.method in ['PUT', 'PATCH', 'DELETE']:
-                return obj.sender.user_id == user.user_id
-                
-            return True
-        
-        return False

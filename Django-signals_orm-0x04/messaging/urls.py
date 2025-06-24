@@ -1,52 +1,33 @@
 """
-URL configuration for the messaging app - Task 1: Message Edit History
+URL configuration for messaging_app project.
 
-This module defines URL patterns for viewing message edit history.
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/4.2/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  path('', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
+Including another URLconf
+    1. Import the include() function: from django.urls import include, path
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
 
-app_name = 'messaging'
+
+router = DefaultRouter()
+router.register(r'users', views.UserViewSet)
+router.register(r'messages', views.MessageViewSet)
+router.register(r'notifications', views.NotificationViewSet)
+router.register(r'message-history', views.MessageHistoryViewSet)
+
 
 urlpatterns = [
-    # Message edit history views
-    path('message/<uuid:message_id>/history/', 
-         views.message_edit_history, 
-         name='message_edit_history'),
-    
-    path('message/<uuid:message_id>/history/json/', 
-         views.message_edit_history_json, 
-         name='message_edit_history_json'),
-    
-    path('message/<uuid:message_id>/edit-preview/', 
-         views.message_edit_preview, 
-         name='message_edit_preview'),
-    
-    # Conversation views with edit history
-    path('conversation/<uuid:conversation_id>/', 
-         views.conversation_with_edit_history, 
-         name='conversation_with_history'),
-    
-    # Dashboard for recent edits
-    path('dashboard/recent-edits/', 
-         views.recent_edits_dashboard, 
-         name='recent_edits_dashboard'),
-    
-    # Task 2: User deletion and account management URLs
-    path('account/settings/', 
-         views.account_settings, 
-         name='account_settings'),
-    
-    path('account/delete/', 
-         views.delete_user_account, 
-         name='delete_user_account'),
-    
-    path('account/delete/preview/', 
-         views.user_deletion_preview, 
-         name='user_deletion_preview'),
-    
-    path('account/export-data/', 
-         views.export_user_data, 
-         name='export_user_data'),
+    path('', include(router.urls)),
+    path('delete-account/', views.delete_user, name='delete_user_api'), 
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')), # For DRF's login/logout
 ]

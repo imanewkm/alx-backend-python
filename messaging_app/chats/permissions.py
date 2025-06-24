@@ -1,45 +1,35 @@
-#!/usr/bin/env python3
-"""
-Custom permissions for messaging_app.chats.
-"""
-
 from rest_framework import permissions
-from .models import Conversation
+
+
+class IsSenderOrReadOnly(permissions.BasePermission):
+    """
+    Allow only participants in a conversation to send, 
+    view, update and delete messages
+    Read-only access is allowed for authenticated user.
+    """
+    message = "You do not have permission to perform this action."
+
+    def has_object_permission(self, request, view, obj):
+        # Read permissions are allowed to any request
+        # GET, HEAD, OPTIONS are allowed
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        # Write permissions are only allowd to sender of message.
+        # can perform POST, PUT, PATCH and DELETE
+        # 'obj' is the Message instance and 'obj.sender' is the User instance
+        return obj.sender == request.user
+
 
 class IsParticipantOfConversation(permissions.BasePermission):
     """
-    Custom permission to allow only authenticated users who are participants
-    of a conversation to view, send, update, or delete messages.
+    Allow only authenticated users to access the api/view, manage conversation
     """
 
-    def has_permission(self, request, view):
-        # Require authentication globally
-        return request.user and request.user.is_authenticated
-
     def has_object_permission(self, request, view, obj):
-        """
-        Object-level permission:
-        Only participants of the conversation can perform:
-        - GET (view), POST (send), PUT/PATCH (update), DELETE (delete)
-        """
-
-        user_is_participant = False
-
-        # If checking a Conversation object
-        if isinstance(obj, Conversation):
-            user_is_participant = request.user in obj.participants.all()
-
-        else:
-            # If checking a Message object — assume it has a 'conversation' FK
-            user_is_participant = request.user in obj.conversation.participants.all()
-
-        # For safe methods (GET, HEAD, OPTIONS), allow if participant
-        if request.method in permissions.SAFE_METHODS:
-            return user_is_participant
-
-        # Explicitly check unsafe methods: PUT, PATCH, DELETE
-        if request.method in ("PUT", "PATCH", "DELETE"):
-            return user_is_participant
-
-        # For other methods (POST or anything else), also check participant
-        return user_is_participant
+        # 'obj' is the Conversation instance
+        return request.user in obj.participants.all()
+    
+    def has_permission(self, request, view):
+        # For list view, ensure user is authenticated
+        return request.user and request.user.is_authenticated

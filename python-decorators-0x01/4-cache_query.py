@@ -2,33 +2,38 @@ import time
 import sqlite3 
 import functools
 
+
 query_cache = {}
 
 def with_db_connection(func):
-    @functools.wraps(func)
-    def wrapper(query, **kwargs):
-        conn = sqlite3.connect('database.db')
+    """automatically handles opening and closing database connections"""
+    @functools.wraps(func) 
+    def wrapper_with_db_connection(*args, **kwargs):
+        conn = sqlite3.connect('users.db')
         try:
-            result = func(conn, query, **kwargs)
+            kwargs['conn'] = conn
+            result = func(*args, **kwargs)
             return result
         finally:
-            conn.close()
-    return wrapper
+            conn.close() 
+
+    return wrapper_with_db_connection
 
 def cache_query(func):
-    @functools.wraps(func)
-    def wrapper(conn, query, **kwargs):
-        # Use the query string as the cache key
+    """caches the results of a database queries inorder to avoid redundant calls"""
+    @functools.wraps(func) 
+    def wrapper_cache_query(*args, **kwargs):
+        query = kwargs['query']
+
         if query in query_cache:
-            print(f"Using cached result for query: {query}")
             return query_cache[query]
         
-        # Execute the function and cache the result
-        result = func(conn, query, **kwargs)
-        query_cache[query] = result
-        print(f"Caching result for query: {query}")
-        return result
-    return wrapper
+        else:
+            result = func(*args, **kwargs)
+            query_cache[query] = result
+            return result
+
+    return wrapper_cache_query
 
 @with_db_connection
 @cache_query
@@ -39,6 +44,7 @@ def fetch_users_with_cache(conn, query):
 
 #### First call will cache the result
 users = fetch_users_with_cache(query="SELECT * FROM users")
-
+print(users)
 #### Second call will use the cached result
 users_again = fetch_users_with_cache(query="SELECT * FROM users")
+print(users_again)
