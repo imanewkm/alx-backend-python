@@ -1,26 +1,31 @@
-# 1. Using a slim base python image to reduce image size
+# Use the official Python runtime image
 FROM python:3.10-slim
 
-# 2. Setting environment vaiables to prevent .pyc files and enable real-time logs
-ENV PYTHONDONTWRITEBYTECODE=1 \ 
-    PYTHONUNBUFFERED=1
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# 3. Setting the working directory
+# Set working directory
 WORKDIR /app
 
-# 4. Installing system dependencies
-# RUN apt-get update && apt-get install -y netcat && rm -rf /var/lib/apt/lists/* 
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# 5. Installing applications dependencies
+# Install Python dependencies
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-
-# 6. Copying the rest of the code into the container
+# Copy project files
 COPY . .
 
-# 7. Exposing default network port (-p)
+# Note: The container should be run with -p 8000:8000 to publish the exposed port
+# Example: docker run -p 8000:8000 messaging_app
+
+# Expose port (default for Django)
 EXPOSE 8000
 
-# 8. Running django app server/ Default cmd for development (can be overwritten in docker-compose)
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Start Django server (adjust if using gunicorn for production)
+CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]

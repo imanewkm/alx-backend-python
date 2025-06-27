@@ -1,0 +1,33 @@
+#!/bin/bash
+
+DEPLOYMENT_NAME="messaging-blue"
+HOSTNAME="messaging.local"
+ENDPOINT="/api/"
+NAMESPACE="default"  # change if you're using another namespace
+
+echo "Starting rolling update to version 2.0..."
+
+# Apply the updated deployment file
+kubectl apply -f blue_deployment.yaml
+
+# Start sending requests in background to detect downtime
+echo "Pinging service during rollout to check for downtime..."
+{
+  while true; do
+    response=$(curl -s -o /dev/null -w "%{http_code}" http://$HOSTNAME$ENDPOINT)
+    echo "Response: $response"
+    sleep 1
+  done
+} &
+CURL_PID=$!
+
+# Monitor rollout
+echo "Watching rollout status..."
+kubectl rollout status deployment/$DEPLOYMENT_NAME
+
+# Once rollout is complete, kill the curl process
+kill $CURL_PID
+
+# Show the new pods
+echo -e "\nCurrent running pods:"
+kubectl get pods -l app=messaging-app -o wide

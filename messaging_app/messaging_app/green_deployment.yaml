@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messaging-green
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: messaging-app
+      version: green
+  # This selector is used to match the pods created by this deployment
+  template:
+    metadata:
+      labels:
+        app: messaging-app
+        version: green
+    spec:
+      containers:
+        - name: messaging-app
+          image: emmaebi/messaging_app-web:new
+          ports:
+            - containerPort: 8000
