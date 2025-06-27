@@ -1,23 +1,24 @@
 #!/bin/bash
 
-echo "Scaling Django app to 3 replicas..."
-kubectl scale deployment messaging-app --replicas=3
+# Step 1: Scale deployment to 3 replicas
+echo "[+] Scaling deployment to 3 replicas..."
+kubectl scale deployment django-messaging-app --replicas=3
 
-echo "Waiting for pods to be ready..."
-kubectl rollout status deployment/messaging-app
+# Wait for pods to be ready
+echo "[+] Waiting for pods to be ready..."
+kubectl wait --for=condition=available deployment/django-messaging-app --timeout=90s
 
-echo "Listing current pods..."
-kubectl get pods -l app=messaging-app
+# Step 2: Get pod status
+echo "[+] Current pods:"
+kubectl get pods -l app=django-messaging
 
-echo "Port-forwarding service to localhost:8000..."
-kubectl port-forward service/messaging-app 8000:8000 > /dev/null 2>&1 &
-sleep 2  # Wait for port-forward to be ready
+# Step 3: Run a quick load test with wrk (make sure wrk is installed locally)
+echo "[+] Running load test using wrk..."
+APP_PORT=$(kubectl get svc django-messaging-service -o jsonpath='{.spec.ports[0].nodePort}')
+minikube service django-messaging-service --url | while read url; do
+    wrk -t4 -c100 -d10s "$url" || echo "wrk failed — make sure wrk is installed!"
+done
 
-APP_URL=http://localhost:8000
-echo "App is accessible at: $APP_URL"
-
-echo "Running load test with wrk..."
-wrk -t4 -c100 -d10s "$APP_URL"
-
-echo "Checking resource usage:"
-kubectl top pods
+# Step 4: Monitor resource usage
+echo "[+] Resource usage:"
+kubectl top pods || echo "You may need to enable metrics server with: minikube addons enable metrics-server"

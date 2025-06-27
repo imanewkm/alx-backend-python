@@ -1,0 +1,1129 @@
+{
+	"info": {
+		"_postman_id": "9d31bb34-44c6-4142-abb6-f6028285b8f0",
+		"name": "Messaging App",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "42371815"
+	},
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "GET USERS FAIL",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is acceptable\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+									"});\r",
+									"var template = `\r",
+									"<canvas id=\"myChart\" height=\"75\"></canvas>\r",
+									"\r",
+									"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js\"></script> \r",
+									"\r",
+									"<script>\r",
+									"    var ctx = document.getElementById(\"myChart\");\r",
+									"\r",
+									"    var myChart = new Chart(ctx, {\r",
+									"        type: \"line\",\r",
+									"        data: {\r",
+									"            labels: [],\r",
+									"            datasets: [{\r",
+									"                label: 'Response Detail',\r",
+									"                data: [],\r",
+									"                backgroundColor: \"rgba(75, 192, 192, 0.2)\",\r",
+									"                borderColor: \"rgba(75, 192, 192, 1)\",\r",
+									"                borderWidth: 1\r",
+									"            }]\r",
+									"        },\r",
+									"        options: {\r",
+									"            scales: {\r",
+									"                xAxes: [{\r",
+									"                    display: true,\r",
+									"                    scaleLabel: {\r",
+									"                        display: true,\r",
+									"                        labelString: 'X-axis'\r",
+									"                    }\r",
+									"                }],\r",
+									"                yAxes: [{\r",
+									"                    display: true,\r",
+									"                    scaleLabel: {\r",
+									"                        display: true,\r",
+									"                        labelString: 'Y-axis'\r",
+									"                    }\r",
+									"                }]\r",
+									"            }\r",
+									"        }\r",
+									"    });\r",
+									"\r",
+									"    pm.getData(function (err, value) {\r",
+									"        myChart.data.datasets[0].data = value.response.data;\r",
+									"        myChart.data.labels = value.response.labels;\r",
+									"        myChart.update();\r",
+									"    });\r",
+									"\r",
+									"</script>`;\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/api/users/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"users",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET USERS PASS",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is acceptable\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+									"});\r",
+									"var template = `\r",
+									"<canvas id=\"myChart\" height=\"75\"></canvas>\r",
+									"\r",
+									"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js\"></script> \r",
+									"\r",
+									"<script>\r",
+									"    var ctx = document.getElementById(\"myChart\");\r",
+									"\r",
+									"    var myChart = new Chart(ctx, {\r",
+									"        type: \"line\",\r",
+									"        data: {\r",
+									"            labels: [],\r",
+									"            datasets: [{\r",
+									"                label: 'Response Detail',\r",
+									"                data: [],\r",
+									"                backgroundColor: \"rgba(75, 192, 192, 0.2)\",\r",
+									"                borderColor: \"rgba(75, 192, 192, 1)\",\r",
+									"                borderWidth: 1\r",
+									"            }]\r",
+									"        },\r",
+									"        options: {\r",
+									"            scales: {\r",
+									"                xAxes: [{\r",
+									"                    display: true,\r",
+									"                    scaleLabel: {\r",
+									"                        display: true,\r",
+									"                        labelString: 'X-axis'\r",
+									"                    }\r",
+									"                }],\r",
+									"                yAxes: [{\r",
+									"                    display: true,\r",
+									"                    scaleLabel: {\r",
+									"                        display: true,\r",
+									"                        labelString: 'Y-axis'\r",
+									"                    }\r",
+									"                }]\r",
+									"            }\r",
+									"        }\r",
+									"    });\r",
+									"\r",
+									"    pm.getData(function (err, value) {\r",
+									"        myChart.data.datasets[0].data = value.response.data;\r",
+									"        myChart.data.labels = value.response.labels;\r",
+									"        myChart.update();\r",
+									"    });\r",
+									"\r",
+									"</script>`;\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5NzgzNTU1LCJpYXQiOjE3NDk2MTA3NTUsImp0aSI6IjVmZmU1NjVmZjg3NzRlY2FiY2M0ZTE2YWQ4MGE3MGNjIiwidXNlcl9pZCI6IjJiM2YwY2Y4LWVmYjQtNDI5OC1iMjFlLTVlNTM1ZWIyNDQ1MiJ9.BmktxNZ8waaUE7hyyJcp3NPrnx-PyZ1_heXbCbFP0sc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/api/users/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"users",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "REGISTER PASS",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "// Please change the details below while running these tests.\r\n{\r\n    \"username\": \"martin\",\r\n    \"first_name\": \"peter\",\r\n    \"last_name\": \"peter\",\r\n    \"email\": \"martin@email.com\",\r\n    \"phone_number\": \"+ 254783925820\",\r\n    \"password\": \"\",\r\n    \"confirm_password\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/api/users/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"users",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "REGISTER FAIL",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Ensure user is not authenticated by clearing the Bearer token\r",
+									"pm.environment.unset(\"bearer_token\");\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test for response status code\r",
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"// Test for response time\r",
+									"pm.test(\"Response time is less than 2000ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+									"});\r",
+									"\r",
+									"// Test for required fields in the response body\r",
+									"pm.test(\"Response body contains errors for missing fields\", function () {\r",
+									"    const responseBody = pm.response.json();\r",
+									"    const expectedFields = ['username', 'password', 'confirm_password'];\r",
+									"    \r",
+									"    expectedFields.forEach(field => {\r",
+									"        pm.expect(responseBody).to.have.property(field);\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"// Test for error messages in the response body\r",
+									"pm.test(\"Response body contains error messages\", function () {\r",
+									"    const responseBody = pm.response.json();\r",
+									"    const errorMessages = {\r",
+									"        username: \"user with this username already exists.\",\r",
+									"        email: \"user with this email already exists.\",\r",
+									"        password: \"This field may not be blank.\",\r",
+									"        confirm_password: \"This field may not be blank.\"\r",
+									"    };\r",
+									"\r",
+									"    for (const field in errorMessages) {\r",
+									"        pm.expect(responseBody[field]).to.include(errorMessages[field]);\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"peter\",\r\n    \"first_name\": \"peter\",\r\n    \"last_name\": \"peter\",\r\n    \"email\": \"muhumukip@gmail.com\",\r\n    \"phone_number\": \"+ 254783925820\",\r\n    \"password\": \"\",\r\n    \"confirm_password\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/api/users/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"users",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LOGIN FAIL",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"last_name\",\r\n    \"password\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/api/login/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"login",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LOGIN PASS",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response should contain access and refresh tokens\", function () {\r",
+									"    const response = pm.response.json();\r",
+									"    pm.expect(response).to.have.property('refresh');\r",
+									"    pm.expect(response).to.have.property('access');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 202]);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 3000ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\" : \"admin\",\r\n    \"password\": \"admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/api/login/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"login",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "REGISTER FAIL AUTH PROVIDED",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response has detail message\", function () {\r",
+									"    const response = pm.response.json();\r",
+									"    pm.expect(response.detail).to.exist;\r",
+									"    pm.expect(response.detail).to.be.a('string');\r",
+									"    pm.expect(response.detail).to.equal(\"Logged in users cannot create new account. Log out first.\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5NzgzNTU1LCJpYXQiOjE3NDk2MTA3NTUsImp0aSI6IjVmZmU1NjVmZjg3NzRlY2FiY2M0ZTE2YWQ4MGE3MGNjIiwidXNlcl9pZCI6IjJiM2YwY2Y4LWVmYjQtNDI5OC1iMjFlLTVlNTM1ZWIyNDQ1MiJ9.BmktxNZ8waaUE7hyyJcp3NPrnx-PyZ1_heXbCbFP0sc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"james\",\r\n    \"first_name\": \"james\",\r\n    \"last_name\": \"james\",\r\n    \"email\": \"james@email.com\",\r\n    \"phone_number\": \"+254765893023\",\r\n    \"password\": \"\",\r\n    \"password\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/api/users/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"users",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET OWN PROFILE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 2000ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5NzgzNTU1LCJpYXQiOjE3NDk2MTA3NTUsImp0aSI6IjVmZmU1NjVmZjg3NzRlY2FiY2M0ZTE2YWQ4MGE3MGNjIiwidXNlcl9pZCI6IjJiM2YwY2Y4LWVmYjQtNDI5OC1iMjFlLTVlNTM1ZWIyNDQ1MiJ9.BmktxNZ8waaUE7hyyJcp3NPrnx-PyZ1_heXbCbFP0sc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/api/users/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"users",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET OTHER PROFILE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5NzgzNTU1LCJpYXQiOjE3NDk2MTA3NTUsImp0aSI6IjVmZmU1NjVmZjg3NzRlY2FiY2M0ZTE2YWQ4MGE3MGNjIiwidXNlcl9pZCI6IjJiM2YwY2Y4LWVmYjQtNDI5OC1iMjFlLTVlNTM1ZWIyNDQ1MiJ9.BmktxNZ8waaUE7hyyJcp3NPrnx-PyZ1_heXbCbFP0sc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/api/users/0c6a0612-9358-4607-af54-ccd9aa2179c3/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"users",
+								"0c6a0612-9358-4607-af54-ccd9aa2179c3",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "EDIT OTHER PERSON'S PROFILE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
+									"});\r",
+									"pm.test(\"Response time is less than 2000ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5NzgzNTU1LCJpYXQiOjE3NDk2MTA3NTUsImp0aSI6IjVmZmU1NjVmZjg3NzRlY2FiY2M0ZTE2YWQ4MGE3MGNjIiwidXNlcl9pZCI6IjJiM2YwY2Y4LWVmYjQtNDI5OC1iMjFlLTVlNTM1ZWIyNDQ1MiJ9.BmktxNZ8waaUE7hyyJcp3NPrnx-PyZ1_heXbCbFP0sc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"email\": \"admin@gmail.com\",\r\n    \"first_name\": \"admin\",\r\n    \"last_name\": \"admin\",\r\n    \"bio\": null,\r\n    \"phone_number\": \"admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/api/users/0c6a0612-9358-4607-af54-ccd9aa2179c3/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"users",
+								"0c6a0612-9358-4607-af54-ccd9aa2179c3",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "USE EXISTING EMAIL OR USERNAME",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5NzgzNTU1LCJpYXQiOjE3NDk2MTA3NTUsImp0aSI6IjVmZmU1NjVmZjg3NzRlY2FiY2M0ZTE2YWQ4MGE3MGNjIiwidXNlcl9pZCI6IjJiM2YwY2Y4LWVmYjQtNDI5OC1iMjFlLTVlNTM1ZWIyNDQ1MiJ9.BmktxNZ8waaUE7hyyJcp3NPrnx-PyZ1_heXbCbFP0sc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"email\": \"admin@gmail.com\",\r\n    \"first_name\": \"admin\",\r\n    \"last_name\": \"admin\",\r\n    \"bio\": null,\r\n    \"phone_number\": \"admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/api/users/2b3f0cf8-efb4-4298-b21e-5e535eb24452/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"users",
+								"2b3f0cf8-efb4-4298-b21e-5e535eb24452",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UPDATE OWN PROFILE SUCCESS",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Response time is less than 2000ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5NzgzNTU1LCJpYXQiOjE3NDk2MTA3NTUsImp0aSI6IjVmZmU1NjVmZjg3NzRlY2FiY2M0ZTE2YWQ4MGE3MGNjIiwidXNlcl9pZCI6IjJiM2YwY2Y4LWVmYjQtNDI5OC1iMjFlLTVlNTM1ZWIyNDQ1MiJ9.BmktxNZ8waaUE7hyyJcp3NPrnx-PyZ1_heXbCbFP0sc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"first_name\": \"Petr\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/api/users/2b3f0cf8-efb4-4298-b21e-5e535eb24452/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"users",
+								"2b3f0cf8-efb4-4298-b21e-5e535eb24452",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "CHAT AND CONVERSATIONS",
+			"item": [
+				{
+					"name": "CONVERSATIONS FAIL NO AUTH",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response time is less than 200ms\", function () {\r",
+									"    try {\r",
+									"        pm.expect(pm.response.responseTime).to.be.below(200);\r",
+									"    } catch (e) {\r",
+									"        console.error(\"Response time check failed:\", e);\r",
+									"    }\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Status code is 401\", function () {\r",
+									"    try {\r",
+									"        pm.expect(pm.response.code).to.equal(401);\r",
+									"    } catch (e) {\r",
+									"        console.error(\"Status code check failed:\", e);\r",
+									"    }\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Validate response body structure\", function () {\r",
+									"    try {\r",
+									"        const responseBody = pm.response.json();\r",
+									"        pm.expect(responseBody).to.have.property('detail');\r",
+									"        pm.expect(responseBody.detail).to.be.a('string');\r",
+									"        pm.expect(responseBody.detail).to.equal('Authentication credentials were not provided.');\r",
+									"    } catch (e) {\r",
+									"        console.error(\"Response body check failed:\", e);\r",
+									"    }\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/api/chats/conversations/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"chats",
+								"conversations",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Converstions GET SUCCEEED",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Response time is less than 2000ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5NzgzNTU1LCJpYXQiOjE3NDk2MTA3NTUsImp0aSI6IjVmZmU1NjVmZjg3NzRlY2FiY2M0ZTE2YWQ4MGE3MGNjIiwidXNlcl9pZCI6IjJiM2YwY2Y4LWVmYjQtNDI5OC1iMjFlLTVlNTM1ZWIyNDQ1MiJ9.BmktxNZ8waaUE7hyyJcp3NPrnx-PyZ1_heXbCbFP0sc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/api/chats/conversations/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"chats",
+								"conversations",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CREATE CONVERSATION SUCCEED",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5NzgzNTU1LCJpYXQiOjE3NDk2MTA3NTUsImp0aSI6IjVmZmU1NjVmZjg3NzRlY2FiY2M0ZTE2YWQ4MGE3MGNjIiwidXNlcl9pZCI6IjJiM2YwY2Y4LWVmYjQtNDI5OC1iMjFlLTVlNTM1ZWIyNDQ1MiJ9.BmktxNZ8waaUE7hyyJcp3NPrnx-PyZ1_heXbCbFP0sc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/api/chats/conversations/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"chats",
+								"conversations",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CREATE CONVERSATION SUCCEED OTHER USER",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5ODY2MDU4LCJpYXQiOjE3NDk2OTMyNTgsImp0aSI6IjRmZTBmYjU3YTU0NzRlZWRhZWU0YTkyYzE5ZDJkNGIzIiwidXNlcl9pZCI6IjBjNmEwNjEyLTkzNTgtNDYwNy1hZjU0LWNjZDlhYTIxNzljMyJ9.lzK1YXlUshkUv_Lf5f1B7raDTf-Af0mtkYv_pjODj6M",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/api/chats/conversations/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"chats",
+								"conversations",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET SPECIFIC CONVO",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5NzgzNTU1LCJpYXQiOjE3NDk2MTA3NTUsImp0aSI6IjVmZmU1NjVmZjg3NzRlY2FiY2M0ZTE2YWQ4MGE3MGNjIiwidXNlcl9pZCI6IjJiM2YwY2Y4LWVmYjQtNDI5OC1iMjFlLTVlNTM1ZWIyNDQ1MiJ9.BmktxNZ8waaUE7hyyJcp3NPrnx-PyZ1_heXbCbFP0sc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/api/chats/conversations/665cfaa7-72c3-40a9-9a42-6d0b9d9dc493/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"chats",
+								"conversations",
+								"665cfaa7-72c3-40a9-9a42-6d0b9d9dc493",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET SPECIFIC CONVO INVALID UUID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response time is less than 200ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+									"});\r",
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5NzgzNTU1LCJpYXQiOjE3NDk2MTA3NTUsImp0aSI6IjVmZmU1NjVmZjg3NzRlY2FiY2M0ZTE2YWQ4MGE3MGNjIiwidXNlcl9pZCI6IjJiM2YwY2Y4LWVmYjQtNDI5OC1iMjFlLTVlNTM1ZWIyNDQ1MiJ9.BmktxNZ8waaUE7hyyJcp3NPrnx-PyZ1_heXbCbFP0sc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/api/chats/conversations/665cfaa7-72c3-40a9-9a42-6d0b9d9dc49/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"chats",
+								"conversations",
+								"665cfaa7-72c3-40a9-9a42-6d0b9d9dc49",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET CONVERSATION MESSAGES",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5NzgzNTU1LCJpYXQiOjE3NDk2MTA3NTUsImp0aSI6IjVmZmU1NjVmZjg3NzRlY2FiY2M0ZTE2YWQ4MGE3MGNjIiwidXNlcl9pZCI6IjJiM2YwY2Y4LWVmYjQtNDI5OC1iMjFlLTVlNTM1ZWIyNDQ1MiJ9.BmktxNZ8waaUE7hyyJcp3NPrnx-PyZ1_heXbCbFP0sc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/api/chats/conversations/85f61385-b0b7-4326-a44a-9fdcad9c875c/messages",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"chats",
+								"conversations",
+								"85f61385-b0b7-4326-a44a-9fdcad9c875c",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ADD A MESSAGE TO A CONVERSATION",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5NzgzNTU1LCJpYXQiOjE3NDk2MTA3NTUsImp0aSI6IjVmZmU1NjVmZjg3NzRlY2FiY2M0ZTE2YWQ4MGE3MGNjIiwidXNlcl9pZCI6IjJiM2YwY2Y4LWVmYjQtNDI5OC1iMjFlLTVlNTM1ZWIyNDQ1MiJ9.BmktxNZ8waaUE7hyyJcp3NPrnx-PyZ1_heXbCbFP0sc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"message_body\": \"It is an awesome exprience to have with you around.\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/api/chats/conversations/85f61385-b0b7-4326-a44a-9fdcad9c875c/messages/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"chats",
+								"conversations",
+								"85f61385-b0b7-4326-a44a-9fdcad9c875c",
+								"messages",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ADD CONVERSATION PARTICIPANT",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5NzgzNTU1LCJpYXQiOjE3NDk2MTA3NTUsImp0aSI6IjVmZmU1NjVmZjg3NzRlY2FiY2M0ZTE2YWQ4MGE3MGNjIiwidXNlcl9pZCI6IjJiM2YwY2Y4LWVmYjQtNDI5OC1iMjFlLTVlNTM1ZWIyNDQ1MiJ9.BmktxNZ8waaUE7hyyJcp3NPrnx-PyZ1_heXbCbFP0sc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"user_id\": \"0c6a0612-9358-4607-af54-ccd9aa2179c3\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/api/chats/conversations/85f61385-b0b7-4326-a44a-9fdcad9c875c/add-participant/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"chats",
+								"conversations",
+								"85f61385-b0b7-4326-a44a-9fdcad9c875c",
+								"add-participant",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

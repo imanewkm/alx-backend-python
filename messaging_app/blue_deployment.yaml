@@ -6,7 +6,8 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: django-messaging
+      app: django
+      version: blue
   template:
     metadata:
       labels:

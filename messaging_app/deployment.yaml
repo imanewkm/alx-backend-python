@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: django-blue
+  name: django-messaging-app
 spec:
   replicas: 1
   selector:
@@ -10,12 +10,11 @@ spec:
   template:
     metadata:
       labels:
-        app: django
-        version: blue
+        app: django-messaging
     spec:
       containers:
         - name: django-containers
-          image: petermuhumuki/django-messaging:2.0
+          image: petermuhumuki/django-messaging:latest
           ports:
             - containerPort: 8000
           env:

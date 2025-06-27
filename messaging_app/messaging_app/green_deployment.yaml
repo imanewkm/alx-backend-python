@@ -1,22 +1,60 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: messaging-green
+  name: django-green
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
-      app: messaging-app
-      version: green
-  # This selector is used to match the pods created by this deployment
+      app: django-messaging
   template:
     metadata:
       labels:
-        app: messaging-app
+        app: django
         version: green
     spec:
       containers:
-        - name: messaging-app
-          image: emmaebi/messaging_app-web:new
+        - name: django-containers
+          image: petermuhumuki/django-messaging:latest
           ports:
             - containerPort: 8000
+          env:
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: django-db-secret
+                  key: MYSQL_DB
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: django-db-secret
+                  key: MYSQL_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: django-db-secret
+                  key: MYSQL_PASSWORD
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: django-db-secret
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: django-db-secret
+                  key: DB_PORT
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: django-db-secret
+                  key: SECRET_KEY
+            - name: DEBUG
+              valueFrom:
+                secretKeyRef:
+                  name: django-db-secret
+                  key: DEBUG
+            - name: WAIT_FOR_DB
+              value: "true"
+            - name: DJANGO_SETTINGS_MODULE
+              value: messaging_app.settings

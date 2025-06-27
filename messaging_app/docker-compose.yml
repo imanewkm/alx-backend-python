@@ -1,38 +1,28 @@
-version: '3.8'
-
 services:
-  # Django messaging app service
-  web:
-    build: .
-    container_name: django_app
-    volumes:
-      - .:/app
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-    env_file:
-      - .env
-    command: python manage.py runserver 0.0.0.0:8000
-
-  # MySQL database service
   db:
     image: mysql:8.0
-    container_name: mysql_db
     restart: always
     environment:
       MYSQL_DATABASE: ${MYSQL_DB}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_ROOT_PASSWORD: rootpassword
-    volumes:
-      - db_data:/var/lib/mysql
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
       - "3306:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql     
+
+  web:
+    build: .
+    command: ./wait-for-db.sh python3 manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
     env_file:
       - .env
+    depends_on:
+      - db
 
-# Defining the named volumes for data persistence
 volumes:
-  web_data:
-  db_data:
+  mysqldata:                         
