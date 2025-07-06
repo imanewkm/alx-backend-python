@@ -1,12 +1,30 @@
 #!/bin/bash
 
-# Apply both deployments
+# Apply blue deployment
+echo "Deploying Blue version..."
 kubectl apply -f blue_deployment.yaml
+echo "Waiting for Blue version pods to be ready..."
+kubectl wait --for=condition=ready pod -l app=django,version=blue --timeout=60s
+
+# Check logs of Blue version
+echo "Checking logs for Blue version..."
+kubectl logs -l app=django,version=blue --tail=10
+
+# Apply green deployment
+echo "Deploying Green version..."
 kubectl apply -f green_deployment.yaml
+echo "Waiting for Green version pods to be ready..."
+kubectl wait --for=condition=ready pod -l app=django,version=green --timeout=60s
 
-# Check logs for green
-echo "Checking logs for green deployment..."
-kubectl logs -l app=django,version=green
+# Check logs of Green version
+echo "Checking logs for Green version..."
+kubectl logs -l app=django,version=green --tail=10
 
-# Apply service (starts with blue, change to green manually or via script later)
-kubectl apply -f kubeservice.yaml
+# Switch service to Green version
+echo "Switching Service to Green version..."
+kubectl patch service django-service -p '{"spec":{"selector":{"app":"django","version":"green"}}}'
+echo "Service switched to Green version."
+
+# Verify service
+echo "Service details:"
+kubectl get svc django-service

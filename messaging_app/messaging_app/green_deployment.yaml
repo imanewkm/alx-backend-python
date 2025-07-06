@@ -1,60 +1,43 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: django-green
+  name: messaging-app-green
+  labels:
+    app: messaging-app
+    version: green
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: django-messaging
+      app: messaging-app
+      version: green
   template:
     metadata:
       labels:
-        app: django
+        app: messaging-app
         version: green
     spec:
       containers:
-        - name: django-containers
-          image: petermuhumuki/django-messaging:latest
-          ports:
-            - containerPort: 8000
-          env:
-            - name: DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: django-db-secret
-                  key: MYSQL_DB
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: django-db-secret
-                  key: MYSQL_USER
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: django-db-secret
-                  key: MYSQL_PASSWORD
-            - name: DB_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: django-db-secret
-                  key: DB_HOST
-            - name: DB_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: django-db-secret
-                  key: DB_PORT
-            - name: SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: django-db-secret
-                  key: SECRET_KEY
-            - name: DEBUG
-              valueFrom:
-                secretKeyRef:
-                  name: django-db-secret
-                  key: DEBUG
-            - name: WAIT_FOR_DB
-              value: "true"
-            - name: DJANGO_SETTINGS_MODULE
-              value: messaging_app.settings
+      - name: messaging-app
+        image: ghcr.io/mankindjnr/alx-message-app:latest  # Use a different tag if testing a new version
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DJANGO_SETTINGS_MODULE
+          value: messaging_app.settings
+        - name: DEBUG
+          value: "False"
+        readinessProbe:
+          httpGet:
+            path: "/api/health/"
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: "/api/health/"
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 30
+      imagePullSecrets:
+      - name: ghcr-regcred

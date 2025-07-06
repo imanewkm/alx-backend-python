@@ -1,18 +1,20 @@
-appVersion: networking.k8s.io/v1
-kind: ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: django-ingress
+  name: messaging-app-ingress
+  namespace: default
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
+  ingressClassName: nginx
   rules:
-  - host: messaging.local
+  - host: messaging-app.local
     http:
       paths:
-      - path: /?(.*)
-        pathtype: Prefix
+      - path: /
+        pathType: Prefix
         backend:
           service:
-            name: django-messaging-service
+            name: messaging-app-service
             port:
               number: 8000

@@ -1,64 +1,114 @@
-from rest_framework import viewsets, permissions, filters, status
+from django.shortcuts import render
+from rest_framework import viewsets, status
 from rest_framework.response import Response
-from .models import Conversation, Message
-from .serializers import ConversationSerializer, MessageSerializer
-from .permissions import IsParticipantOfConversation
+from .models import Conversation, User, Message
+from .serializers import ConversationSerializer, MessageSerializer, UserSerializer
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from .pagination import MessagePagination
-from messaging_app.filters import MessageFilter
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.status import HTTP_403_FORBIDDEN
-
+from rest_framework_nested.routers import NestedDefaultRouter
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.pagination import PageNumberPagination
+from .permissions import IsParticipantOfConversation
+from .filters import MessageFilter
 
 class ConversationViewSet(viewsets.ModelViewSet):
+    queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
-    permission_classes = [IsParticipantOfConversation]
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['participants__username']
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['participants']
 
     def get_queryset(self):
-        # Only return conversations the user is involved in
-        return Conversation.objects.filter(participants=self.request.user)
-
-    def perform_create(self, serializer):
-        conversation = serializer.save()
-        conversation.participants.add(self.request.user)
+        return self.queryset.filter(participants=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            self.perform_create(serializer)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        """
+        Create a new conversation and add participants.
+        """
+        participants_ids = request.data.get('participants', [])
+        if not participants_ids:
+            return Response(
+                {"error": "Participants are required to create a conversation."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        participants = User.objects.filter(user_id__in=participants_ids)
+        if participants.count() != len(participants_ids):
+            return Response(
+                {"error": "Some participants do not exist."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
+        conversation = Conversation.objects.create()
+        conversation.participants.set(participants)
+        serializer = self.get_serializer(conversation)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
-
+class MessagePagination(PageNumberPagination):
+    page_size = 20
 
 class MessageViewSet(viewsets.ModelViewSet):
+    queryset = Message.objects.all()
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     pagination_class = MessagePagination
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_class = MessageFilter
-    ordering_fields = ['sent_at']
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = MessageFilter
 
     def get_queryset(self):
-        queryset = Message.objects.filter(conversation__participants=self.request.user)
+        return self.queryset.filter(conversation__participants=self.request.user)
 
-        # Support ?conversation_id=xyz
-        conversation_id = self.request.query_params.get('conversation_id')
-        if conversation_id:
-            try:
-                conversation = Conversation.objects.get(id=conversation_id)
-                if self.request.user not in conversation.participants.all():
-                    raise PermissionDenied("You are not a participant of this conversation.")
-                    status=HTTP_403_FORBIDDEN
-                queryset = queryset.filter(conversation=conversation)
-            except Conversation.DoesNotExist:
-                raise PermissionDenied("Conversation not found or access denied.")
-                status=HTTP_403_FORBIDDEN
+    def create(self, request, *args, **kwargs):
+        """
+        Send a message to an existing conversation.
+        """
+        conversation_id = request.data.get('conversation_id')
+        message_body = request.data.get('message_body')
+        sender_id = request.data.get('sender_id')
 
-        return queryset
+        if not all([conversation_id, message_body, sender_id]):
+            return Response(
+                {"error": "conversation_id, message_body, and sender_id are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
+        conversation = get_object_or_404(Conversation, conversation_id=conversation_id)
+        sender = get_object_or_404(User, user_id=sender_id)
+
+        message = Message.objects.create(
+            conversation=conversation,
+            sender=sender,
+            message_body=message_body
+        )
+        serializer = self.get_serializer(message)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        # alllow anyone to create a new user
+        if self.action == 'create':
+            return [AllowAny()]
+        return super().get_permissions()
+
+    def get_queryset(self):
+        return self.queryset.filter(user_id=self.request.user.user_id)
+
+    def create(self, request, *args, **kwargs):
+        """
+        Create a new user.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class HealthCheckViewSet(viewsets.ViewSet):
+    permission_classes = [AllowAny]
+
+    def health(self, request):
+        return Response({"status": "ok"}, status=status.HTTP_200_OK)

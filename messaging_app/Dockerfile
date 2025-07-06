@@ -1,16 +1,30 @@
-FROM python:3.12
+FROM python:3.10
 
-WORKDIR /app
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# set work directory
+WORKDIR /messageapp
 
-COPY . . 
+# install dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libpq-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y netcat-openbsd
+COPY ./requirements.txt /messageapp/requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-RUN chmod +x wait-for-db.sh
+# add a non-root user
+RUN useradd --create-home appuser
+USER appuser
 
+# copy project
+COPY . /messageapp/
+
+# Expose the port the app runs on
 EXPOSE 8000
-ENTRYPOINT ["./wait-for-db.sh"]
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+# run the application
+CMD ["gunicorn", "messaging_app.wsgi:application", "--bind", "0.0.0.0:8000"]

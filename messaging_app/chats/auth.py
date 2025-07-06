@@ -1,7 +1,12 @@
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
+    TokenVerifyView,
 )
+from django.urls import path
 
-# You can import and re-export these for urls if preferred
-__all__ = ['TokenObtainPairView', 'TokenRefreshView']
+urlpatterns = [
+    path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('verify/', TokenVerifyView.as_view(), name='token_verify'),
+]

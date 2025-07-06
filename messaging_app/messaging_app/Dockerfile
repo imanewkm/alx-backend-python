@@ -1,22 +1,30 @@
-FROM python:3.10-slim
+FROM python:3.10
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-WORKDIR /code
+# set work directory
+WORKDIR /messageapp
 
+# install dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
-    default-libmysqlclient-dev \
-    pkg-config \
-    && rm -rf /var/lib/apt/lists/*
+    libpq-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt /code/
-RUN pip install --upgrade pip && pip install --default-timeout=120 -r requirements.txt
+COPY ./requirements.txt /messageapp/requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-COPY . /code/
+# add a non-root user
+RUN useradd --create-home appuser
+USER appuser
 
+# copy project
+COPY . /messageapp/
+
+# Expose the port the app runs on
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "--noreload", "0.0.0.0", "-p", "8000"]
-
+# run the application
+CMD ["gunicorn", "messaging_app.wsgi:application", "--bind", "0.0.0.0:8000"]

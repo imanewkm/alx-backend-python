@@ -1,18 +1,35 @@
 #!/bin/bash
 
-set -e
-
-echo "📦 Applying updated blue deployment (v2.0)..."
+# Step 1: Apply the updated blue deployment
+echo "Applying updated deployment..."
 kubectl apply -f blue_deployment.yaml
 
-echo "⏳ Monitoring rollout status..."
-kubectl rollout status deployment/django-blue
+# Step 2: Trigger a rolling update and monitor the progress
+echo "Monitoring rollout progress..."
+kubectl rollout status deployment/messaging-app-blue
 
-echo "🔄 Sending test requests using curl..."
-for i in {1..10}; do
-  curl -s http://127.0.0.1:PORT/ || echo "❌ Request failed"
-  sleep 1
+# Step 3: Test app for downtime
+echo "Testing app for downtime using curl..."
+SERVICE_IP=$(kubectl get svc messaging-app-service -o jsonpath='{.spec.clusterIP}')
+echo "Service IP: $SERVICE_IP"
+
+if [ -z "$SERVICE_IP" ]; then
+    echo "Service IP not found. Exiting..."
+    exit 1
+fi
+
+# Continuous curl requests to test downtime
+echo "Sending continuous requests..."
+for i in {1..30}; do
+    curl -s http://$SERVICE_IP:8000/api/health/ > /dev/null
+    if [ $? -ne 0 ]; then
+        echo "Request $i: Service is unavailable!"
+    else
+        echo "Request $i: Service is up."
+    fi
+    sleep 1
 done
 
-echo "✅ Verifying running pods:"
-kubectl get pods -l app=django
+# Step 4: Verify the rolling update by listing pods
+echo "Verifying updated pods..."
+kubectl get pods -l app=messaging-app -l version=blue

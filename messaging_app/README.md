@@ -1,61 +1,151 @@
-## Overview
+# SERIALIZERS
+serializers are fundamental to the DRF, they are used to convert complex data types,
+like django model instances, into native python data types that can then be easily
+rendered into JSON, XML or other content types.
+>>> pip install djangorestframework
+```python
+# settings.py
+INSTALLED_APPS = [
+    ...
+    'rest_framework',
+    ...
+]
+```
+if you have a model named BlogPost, you can create a serializer for it by creating a new file - `serializers.py`
+```python
+from rest_framework import serializers
+from .models import BlogPost
 
-In this project, learners will explore the complete lifecycle of designing and implementing robust RESTful APIs using Django. They will begin with scaffolding the project environment and progressively move through identifying and defining data models, establishing database relationships, and setting up clean, scalable URL routing. Emphasis is placed on following Django’s best practices to ensure maintainable and production-ready codebases.
+class BlogPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogPost
+        fields = '__all__'
+        # fields = ['title', 'content', 'created_at']
+```
+compared to fastapi, serializers are similar to pydantic models(schema).
 
-This project serves as a foundation for any backend developer aiming to master API development using the Django framework and prepares learners to build secure, scalable systems that follow modern architectural patterns.
+## Using the Serializers in Views
+You can use the serializer in your views to handle incoming data and provide appropriate responses. Here's an example using Django REST Framework's class-based views.
 
-## Project Objectives
+### Views Definition
+```python
+# views.py
+from rest_framework import generics
+from .models import BlogPost
+from .serializers import BlogPostSerializer
 
-By the end of this project, learners will be able to:
+class BlogPostListCreate(generics.ListCreateAPIView):
+    queryset = BlogPost.objects.all()
+    serializer_class = BlogPostSerializer
 
-- Scaffold a Django project using industry-standard project structures.
-- Identify, define, and implement scalable data models using Django’s ORM.
-- Establish one-to-many, many-to-many, and one-to-one relationships between models.
-- Create clean and modular Django apps.
-- Set up and configure URL routing for APIs using Django’s path and include functions.
-- Follow best practices in file structure, code organization, and documentation.
-- Build a maintainable API layer using Django REST Framework (optional enhancement).
-- Validate and test APIs with real data using tools like Postman or Swagger.
+class BlogPostDetail(generics.RetrieveUpdateDestroyerAPIView):
+    queryset = BlogPost.objects.all()
+    serializer_class = BlogPostSerializer
+```
+- The statement `queryset = BlogPost.objects.all()` means we're creating a queryset that contains all instances of the `BlogPost` model from the database.
+- You can use `values` or `value_list` to filter the specific columns you want.
 
-## Learning Outcomes
+### Settings Up URLs
+Add the URLs for the views in the urls.py
+```python
+# urls.py
+from django.urls import path
+from .views import BlogPostListCreate, BlogPostDetail
 
-Upon completing this project, learners will:
+urlpatterns = [
+    path('api/blogposts/', BlogPostListCreate.as_view(), name='blogpost-list-create'),
+    path('api/blogposts/<int:pk>/', BlogPostDetail.as_view(), name='blogpost-detail'),
+]
+```
+__Test the api__
+>>> python manage.py runserver
 
-- Understand the structure of a Django project and how to scaffold it properly.
-- Be able to design relational database schemas based on feature requirements.
-- Gain confidence in using Django models and migrations to persist data.
-- Build and route API endpoints that adhere to RESTful conventions.
-- Separate concerns by organizing views, serializers (if using DRF), and URL configurations.
-- Understand and apply modular development strategies by separating logic into reusable apps.
-- Follow Django’s naming and configuration conventions to improve code readability and team collaboration.
+__create a new blog post__
+>>> curl -X POST -d "title=New Post&content=This is a new post." http://127.0.0.1:8000/api/blogposts
 
-## Key Implementation Phases
+## Serializers and Relationships
 
-1. Project Setup and Environment Configuration
-    - Create a virtual environment
-    - Install Django
-    - Scaffold the project with django-admin startproject and python manage.py startapp
-    - Configure settings.py (INSTALLED_APPS, middleware, CORS, etc.)
+Serializers are also used to define and manage relationships between models. This is done by using special fields in serializers, such as `PrimaryKeyRelatedField`, `StringRelatedField`, `HyperlinkedRelatedField`, and `SlugRelatedField`. These fields help you represent and handle relationships between different models in your APIs.
 
-2. Defining Data Models
-    - Identify core models based on requirements (e.g., User, Property, Booking)
-    - Use Django ORM to define model classes
-    - Add field types, constraints, and default behaviors
-    - Apply migrations and use Django Admin for verification
+__MANY TO MANY RELATIONSHIP__
+models `Author and Book` - An author can write multiple books, and a book can have multiple authors.
 
-3. Establishing Relationships
-    - Implement foreign keys, many-to-many relationships, and one-to-one links
-    - Use related_name, on_delete, and reverse relationships effectively
-    - Use Django shell to test object relations
+`models`
+```python
+from django.db import models
 
-4. URL Routing
-    - Define app-specific routes using urls.py
-    - Use include() to modularize routes per app
-    - Follow RESTful naming conventions: /api/properties/, /api/bookings/<id>/
-    - Create nested routes when necessary
+class Author(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
 
-5. Best Practices and Documentation
-    - Use views.py to separate logic and ensure Single Responsibility
-    - Document endpoints using README or auto-generated documentation tools
-    - Keep configuration settings modular (e.g., using .env or settings/ directory structure)
-    - Use versioned APIs (e.g., /api/v1/) to future-proof development
+    def __str__(self):
+        return self.name
+
+class Book(models.Model):
+    title = models.CharField(max_length=200)
+    authors = models.ManyToManyField(Author, related_name='books')
+    published_date = models.DateField()
+
+    def __str__(self):
+        return self.title
+```
+### Serializer Definitions
+Serializers for the models above, including many-to-many relationship.
+
+```python
+# serializers.py
+
+from rest_framework import serializers
+from .models import Author, Book
+
+class AuthorSerializer(serializers.modelSerializer):
+    books = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = Author
+        fields = ['id', 'name', 'email', 'books']
+
+class BookSerializer(serializers.modelSerializer):
+    authors = serializers.PrimaryKeyRelatedField(many=True, queryset=Author.objects.all())
+
+    class Meta:
+        model = Book
+        fields = ['id', 'title', 'authors', 'published_date']
+```
+`Discussion`
+The `authors` in `BookSerializer` has a queryset since its not readonly and the author will have to be validated unlike the `books` in the `AuthorSerializer` which is readonly. 
+The `books` queryset ensures that only Valid `Author` instances are associated with a `Book`, enabling proper Validation and lookup during create or update operatins.
+- The `AuthorSerializer` includes a `books` field that references the related books. This field uses `PrimaryKeyRelatedField` with `many=True` to indicate a `many-to-many` relationship.
+- The `BookSerializer` includes an `authors` field that references the related authors. This field also uses
+`PrmaryKeyRelatedField` with `many=True` and allows for querying related authors.
+
+- 
+
+- `next is to create the views to serialize and desirialize as well as the urls`
+
+
+***
+***
+`StringRelatedField`:
+- Used for the participants in ConversationSerializer and sender in MessageSerializer. This ensures that the string representation of the related model is displayed instead of its primary key.
+
+`PrimaryKeyRelatedField`:
+- Used for conversation in MessageSerializer to display only the ID of the related conversation.
+
+`Nested Serializer`:
+- In ConversationSerializer, the MessageSerializer is nested to include all messages belonging to a conversation.
+***
+***
+
+***
+***
+`StringRelatedField`:
+- Used for the participants in ConversationSerializer and sender in MessageSerializer. This ensures that the string representation of the related model is displayed instead of its primary key.
+
+`PrimaryKeyRelatedField`:
+- Used for conversation in MessageSerializer to display only the ID of the related conversation.
+
+`Nested Serializer`:
+- In ConversationSerializer, the MessageSerializer is nested to include all messages belonging to a conversation.
+***
+***

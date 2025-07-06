@@ -1,52 +1,94 @@
-import uuid
-from django.contrib.auth.models import AbstractUser
 from django.db import models
+import uuid
+from django.conf import settings
+from django.contrib.auth.models import User, AbstractUser
 
+class User(AbstractUser):
+    user_id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+    # override default fields from abstract user
+    first_name = models.CharField(max_length=255, null=False, blank=False)
+    last_name = models.CharField(max_length=255, null=False, blank=False)
+    email = models.EmailField(unique=True, null=False, blank=False, db_index=True)
 
-class CustomUser(AbstractUser):
-    user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
-    username = models.CharField(max_length=150, unique=True)
-    email = models.EmailField(unique=True)
-    first_name = models.CharField(max_length=30, blank=True)
-    last_name = models.CharField(max_length=150, blank=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
-    password = models.CharField(max_length=128)  # Already in AbstractUser, but added here for the checker
+    # custome fields
+    password_hash = models.CharField(max_length=255, null=False, blank=False)
+    phone_number = models.CharField(max_length=15, null=True, blank=True)
 
-    bio = models.TextField(blank=True, null=True)
-    profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True)
-    is_online = models.BooleanField(default=False)
-    last_seen = models.DateTimeField(null=True, blank=True)
+    # Role field as a ENUM
+    ROLE_CHOICES = [
+        ('guest', 'Guest'),
+        ('host', 'Host'),
+        ('admin', 'Admin'),
+    ]
+    role = models.CharField(
+        max_length=10,
+        choices=ROLE_CHOICES,
+        default='guest',
+        null=False,
+        blank=False
+    )
 
-    def __str__(self):
-        return self.username
-    
-    @property
-    def id(self):
-        return self.user_id
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    # Remove unused fields from AbstractUser
+    username = None
+    is_staff = None # if you don't need staff functionality
+    is_superuser = None #if you don;t need superuser functionality
 
+    # Authentication field
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['first_name', 'last_name']
+
+    def __str_(self):
+        return f"{self.first_name} {self.last_name} ({self.email})"
 
 
 class Conversation(models.Model):
-    participants = models.ManyToManyField(CustomUser, related_name='conversations')
-    title = models.CharField(max_length=255, blank=True, null=True)
-    is_group = models.BooleanField(default=False)
+    conversation_id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+    # Foreign key to User model
+    participants = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='conversations',
+        blank=False
+    )
+    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Conversation {self.id} - Group: {self.is_group}"
-
+        return f"Conversation {self.conversation_id}"
 
 class Message(models.Model):
-    message_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='messages_sent')
-    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
-    message_body = models.TextField()
+    message_id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+    conversation = models.ForeignKey(
+        Conversation,
+        on_delete=models.CASCADE,
+        related_name='messages',
+        blank=False
+    )
+    # Foreign key to User model
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='messages_sent',
+        blank=False
+    )
+    # Message content
+    message_body = models.TextField(blank=False, null=False)
+    # Timestamps
     sent_at = models.DateTimeField(auto_now_add=True)
-    is_read = models.BooleanField(default=False)
-    attachment = models.FileField(upload_to='attachments/', null=True, blank=True)
 
     def __str__(self):
-        return f"Message {self.message_id} from {self.sender.username} in Conversation {self.conversation.conversation_id}"
-
+        return f"Message {self.message_id} from {self.sender} in {self.conversation}"

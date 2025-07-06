@@ -1,29 +1,37 @@
-from rest_framework import permissions
-from rest_framework.permissions import SAFE_METHODS
+from rest_framework.permissions import BasePermission, SAFE_METHODS
 
-class IsParticipantOfConversation(permissions.BasePermission):
+class IsOwnerOrParticipant(BasePermission):
     """
-    Custom permission to:
-    - Allow only authenticated users.
-    - Allow only participants of a conversation to access it.
-    - Allow only message senders to edit or delete their messages.
+    Custom permission to ensure users can access only their own messages and conversations.
     """
 
     def has_permission(self, request, view):
+        # ensure the user is authenticated
         return request.user and request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        if hasattr(obj, 'participants'):
-            # obj is a Conversation
+        if hasattr(obj, 'participants'):  # For Conversations
             return request.user in obj.participants.all()
+        elif hasattr(obj, 'sender'):  # For Messages
+            return obj.sender == request.user or request.user in obj.conversation.participants.all()
+        return False
 
-        elif hasattr(obj, 'conversation'):
-            # obj is a Message
-            # Check participant access for viewing
-            if request.method in SAFE_METHODS:
-                return request.user in obj.conversation.participants.all()
-            # For edits or deletes, only the sender can act
-            elif request.method in ['PUT', 'PATCH', 'DELETE']:
-                return request.user == obj.sender
+class IsParticipantOfConversation(BasePermission):
+    """
+    Custom permission to ensure only participants of a conversation can send, view, update, and delete messages.
+    """
 
+    def has_permission(self, request, view):
+        # Ensure the user is authenticated
+        return request.user and request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        # Check if the object is a Conversation or a Message
+        if hasattr(obj, 'participants'):  # For Conversation
+            return request.user in obj.participants.all()
+        elif hasattr(obj, 'sender'):  # For Message
+            return (
+                request.user in obj.conversation.participants.all()
+                or obj.sender == request.user
+            )
         return False
